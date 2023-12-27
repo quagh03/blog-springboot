@@ -15,8 +15,8 @@ import java.util.UUID;
 public class CategoryController {
     @GetMapping("")
     public ResponseEntity<?> getAllCategories(
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "limit", defaultValue = "10") int limit){
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit){
         return ResponseEntity.ok(String.format("getAllCategories, page=%d, limit=%d", page,limit));
     }
 
