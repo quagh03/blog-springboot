@@ -62,6 +62,7 @@ CREATE TABLE `blog`.`posts`(
     `created_at` DATETIME NOT NULL,
     `updated_at` DATETIME NULL DEFAULT NULL,
     `published_at` DATETIME NULL DEFAULT NULL,
+    `thumbnail` TEXT,
     `views` INT DEFAULT 0,
     `content` TEXT NULL DEFAULT NULL,
     PRIMARY KEY (`id`),
