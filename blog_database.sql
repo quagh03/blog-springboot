@@ -34,7 +34,7 @@ CREATE TABLE `blog`.`tokens`(
     `revoked` TINYINT(1) NOT NULL,
     `user_id` BINARY(16),
     PRIMARY KEY (`id`),
-    FOREIGN KEY (`user_id`) REFERENCES `blog`.`users` (`id`)
+    FOREIGN KEY (`user_id`) REFERENCES `blog`.`users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Social Table
@@ -46,7 +46,7 @@ CREATE TABLE `blog`.`social_accounts`(
     `name` VARCHAR(100) NOT NULL COMMENT 'User Name',
     `user_id` BINARY(16),
     PRIMARY KEY (`id`),
-    FOREIGN KEY (`user_id`) REFERENCES `blog`.`users` (`id`)
+    FOREIGN KEY (`user_id`) REFERENCES `blog`.`users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -70,7 +70,7 @@ CREATE TABLE `blog`.`posts`(
     CONSTRAINT `fk_post_user`
         FOREIGN KEY (`author_id`)
         REFERENCES `blog`.`users` (`id`)
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         ON UPDATE NO ACTION
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -84,19 +84,6 @@ CREATE TABLE `blog`.`post_images` (
     CONSTRAINT `fk_image_post`
         FOREIGN KEY (`post_id`)
             REFERENCES `blog`.`posts` (`id`)
-            ON DELETE CASCADE
-            ON UPDATE NO ACTION
-)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE `blog`.`user_images`(
-	`id` BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
-	`user_id` BINARY(16) DEFAULT NULL UNIQUE,
-	`url` TEXT NOT NULL,
-    PRIMARY KEY (`id`),
-    INDEX `idx_image_user` (`user_id` ASC),
-    CONSTRAINT `fk_image_user`
-        FOREIGN KEY (`user_id`)
-            REFERENCES `blog`.`users` (`id`)
             ON DELETE CASCADE
             ON UPDATE NO ACTION
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -118,12 +105,12 @@ CREATE TABLE `blog`.`post_comments` (
     CONSTRAINT `fk_comment_post`
         FOREIGN KEY (`post_id`)
             REFERENCES `blog`.`posts` (`id`)
-            ON DELETE NO ACTION
+            ON DELETE CASCADE
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_comment_user`
         FOREIGN KEY (`user_id`)
             REFERENCES `blog`.`users` (`id`)
-            ON DELETE NO ACTION
+            ON DELETE CASCADE
             ON UPDATE NO ACTION
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -134,7 +121,7 @@ ALTER TABLE `blog`.`post_comments`
     ADD CONSTRAINT `fk_comment_parent`
         FOREIGN KEY (`parent_id`)
             REFERENCES `blog`.`post_comments` (`id`)
-            ON DELETE NO ACTION
+            ON DELETE CASCADE
             ON UPDATE NO ACTION;
 ALTER TABLE `blog`.`post_comments`
     ADD INDEX `idx_comment_published` (`published` ASC);
@@ -159,7 +146,7 @@ ALTER TABLE `blog`.`categories`
     ADD CONSTRAINT `fk_category_parent`
         FOREIGN KEY (`parent_id`)
             REFERENCES `blog`.`categories` (`id`)
-            ON DELETE NO ACTION
+            ON DELETE CASCADE
             ON UPDATE NO ACTION;
 
 -- Post Category Table
@@ -172,12 +159,12 @@ CREATE TABLE `blog`.`post_categories` (
     CONSTRAINT `fk_pc_post`
         FOREIGN KEY (`post_id`)
             REFERENCES `blog`.`posts` (`id`)
-            ON DELETE NO ACTION
+            ON DELETE CASCADE
             ON UPDATE NO ACTION,
     CONSTRAINT `fk_pc_category`
         FOREIGN KEY (`category_id`)
             REFERENCES `blog`.`categories` (`id`)
-            ON DELETE NO ACTION
+            ON DELETE CASCADE
             ON UPDATE NO ACTION
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
