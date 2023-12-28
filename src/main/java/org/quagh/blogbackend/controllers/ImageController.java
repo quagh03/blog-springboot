@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/images")
+@RequestMapping("${api.prefix}/images")
 public class ImageController {
     @PostMapping("")
     public ResponseEntity<?> uploadImage(@RequestParam("image")MultipartFile file){

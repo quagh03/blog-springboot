@@ -1,46 +1,77 @@
 package org.quagh.blogbackend.controllers;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.quagh.blogbackend.dtos.CategoryDTO;
+import org.quagh.blogbackend.entities.Category;
+import org.quagh.blogbackend.responses.CategoryResponse;
+import org.quagh.blogbackend.services.category.CategoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/categories")
+@RequestMapping("${api.prefix}/categories")
+//Dependency Injection
+@RequiredArgsConstructor
 public class CategoryController {
-    @GetMapping("")
-    public ResponseEntity<?> getAllCategories(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit){
-        return ResponseEntity.ok(String.format("getAllCategories, page=%d, limit=%d", page,limit));
-    }
+    private final CategoryService categoryService;
 
     @PostMapping("")
     public ResponseEntity<?> addCategory(
             @Valid @RequestBody CategoryDTO categoryDTO,
             BindingResult result){
+        CategoryResponse categoryResponse = new CategoryResponse();
         if(result.hasErrors()){
             List<String> errorMessages = result.getAllErrors()
                     .stream()
                     .map(ObjectError::getDefaultMessage)
                     .toList();
-            return ResponseEntity.badRequest().body(errorMessages);
+            categoryResponse.setMessage("Create Category Failed");
+            categoryResponse.setErrors(errorMessages);
+            return ResponseEntity.badRequest().body(categoryResponse);
         }
-        return ResponseEntity.ok("This is insertCategory " + categoryDTO);
+        try {
+            Category addedCategory = categoryService.addCategory(categoryDTO);
+            categoryResponse.setMessage("Created Category");
+            categoryResponse.setCategory(addedCategory);
+            return ResponseEntity.ok(categoryResponse);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
+//    @GetMapping("/{id}")
+//    public ResponseEntity<?> getCategoryById(Long id){
+//
+//    }
+
+    @GetMapping("")
+    public ResponseEntity<?> getAllCategories(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit){
+        List<Category> categories = categoryService.getAllCategories();
+        return ResponseEntity.ok(categories);
+    }
+
+
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable UUID id){
-        return ResponseEntity.ok("This is updateCategory");
+    public ResponseEntity<?> updateCategory(
+            @PathVariable Long id,
+            @RequestBody CategoryDTO categoryDTO){
+        try {
+            categoryService.updateCategory(id, categoryDTO);
+            return ResponseEntity.ok("This is updateCategory");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCategory(@PathVariable UUID id){
+    public ResponseEntity<?> deleteCategory(@PathVariable Long id){
         return ResponseEntity.ok("This is deleteCategory");
     }
 
