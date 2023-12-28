@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.util.UUID;
-
 @Data
 @Getter
 @Setter
@@ -14,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class CategoryDTO {
     @JsonProperty("parent_id")
-    private UUID parentId;
+    private Long parentId;
 
     @NotBlank(message = "Category's title cannot be empty")
     @Size(min = 3, max = 200, message = "Title must be between 3 and 200 characters")
@@ -27,4 +25,6 @@ public class CategoryDTO {
 
     @Size(min = 3, max = 300, message = "Content must be between 3 and 200 characters")
     private String content;
+
+    private String slug;
 }
