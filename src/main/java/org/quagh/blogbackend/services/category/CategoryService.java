@@ -1,5 +1,9 @@
 package org.quagh.blogbackend.services.category;
 
+import org.quagh.blogbackend.entities.PostCategory;
+import org.quagh.blogbackend.repositories.PostCategoryRepository;
+import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.quagh.blogbackend.dtos.CategoryDTO;
 import org.quagh.blogbackend.entities.Category;
@@ -15,8 +19,10 @@ import java.util.List;
 public class CategoryService implements ICategoryService{
 
     private final CategoryRepository categoryRepository;
+    private final PostCategoryRepository postCategoryRepository;
 
     @Override
+    @Transactional
     public Category addCategory(CategoryDTO categoryDTO) throws DataNotFoundException {
         Category newCategory = new Category();
         BeanUtils.copyProperties(categoryDTO, newCategory);
@@ -40,14 +46,30 @@ public class CategoryService implements ICategoryService{
     }
 
     @Override
+    @Transactional
     public Category updateCategory(Long id, CategoryDTO categoryDTO) throws DataNotFoundException {
         Category existingCategory = getCategoryById(id);
-        BeanUtils.copyProperties(categoryDTO, existingCategory, "id", "views");
+        BeanUtils.copyProperties(categoryDTO, existingCategory, "id");
+        Long parentId = categoryDTO.getParentId();
+        if(parentId!=null){
+            Category parentCategory = categoryRepository.findById(parentId)
+                    .orElseThrow(() -> new DataNotFoundException("Parent category not found!"));
+            existingCategory.setParentCategory(parentCategory);
+        }
         return categoryRepository.save(existingCategory);
     }
 
     @Override
-    public void deleteCategory(Long id) {
+    @Transactional
+    public Category deleteCategory(Long id) throws ChangeSetPersister.NotFoundException {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(ChangeSetPersister.NotFoundException::new);
+        List<PostCategory> postCategoryList = postCategoryRepository.findByCategory(category);
+        List<Category> childCategoryList = categoryRepository.findByParentCategory(category);
+        if (!postCategoryList.isEmpty() || !childCategoryList.isEmpty()) {
+            throw new IllegalStateException("Cannot delete category with associated products or child category");
+        }
         categoryRepository.deleteById(id);
+        return category;
     }
 }

@@ -30,13 +30,13 @@ public class CategoryController {
                     .stream()
                     .map(ObjectError::getDefaultMessage)
                     .toList();
-            categoryResponse.setMessage("Create Category Failed");
+            categoryResponse.setMessage("INSERT_CATEGORY_FAILED");
             categoryResponse.setErrors(errorMessages);
             return ResponseEntity.badRequest().body(categoryResponse);
         }
         try {
             Category addedCategory = categoryService.addCategory(categoryDTO);
-            categoryResponse.setMessage("Created Category");
+            categoryResponse.setMessage("INSERT_CATEGORY_SUCCESSFULLY");
             categoryResponse.setCategory(addedCategory);
             return ResponseEntity.ok(categoryResponse);
         }catch (Exception e){
@@ -44,10 +44,18 @@ public class CategoryController {
         }
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<?> getCategoryById(Long id){
-//
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCategoryById(@PathVariable Long id){
+        CategoryResponse categoryResponse = new CategoryResponse();
+        try {
+            Category selectedCategory = categoryService.getCategoryById(id);
+            categoryResponse.setMessage("Get category successfully!");
+            categoryResponse.setCategory(selectedCategory);
+            return ResponseEntity.ok(categoryResponse);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     @GetMapping("")
     public ResponseEntity<?> getAllCategories(
@@ -61,10 +69,24 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCategory(
             @PathVariable Long id,
-            @RequestBody CategoryDTO categoryDTO){
+            @RequestBody CategoryDTO categoryDTO,
+            BindingResult result){
+
+        CategoryResponse categoryResponse = new CategoryResponse();
+        if(result.hasErrors()){
+            List<String> errorMessages = result.getAllErrors()
+                    .stream()
+                    .map(ObjectError::getDefaultMessage)
+                    .toList();
+            categoryResponse.setMessage("UPDATE_CATEGORY_FAILED");
+            categoryResponse.setErrors(errorMessages);
+            return ResponseEntity.badRequest().body(categoryResponse);
+        }
         try {
-            categoryService.updateCategory(id, categoryDTO);
-            return ResponseEntity.ok("This is updateCategory");
+            Category updatedCategory = categoryService.updateCategory(id, categoryDTO);
+            categoryResponse.setMessage("UPDATE_CATEGORY_SUCCESSFULLY");
+            categoryResponse.setCategory(updatedCategory);
+            return ResponseEntity.ok(categoryResponse);
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -72,7 +94,15 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategory(@PathVariable Long id){
-        return ResponseEntity.ok("This is deleteCategory");
+        CategoryResponse categoryResponse = new CategoryResponse();
+        try {
+            Category deletedCategory = categoryService.deleteCategory(id);
+            categoryResponse.setMessage("DELETE_CATEGORY_SUCCESSFULLY");
+            categoryResponse.setCategory(deletedCategory);
+            return ResponseEntity.ok(categoryResponse);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }
