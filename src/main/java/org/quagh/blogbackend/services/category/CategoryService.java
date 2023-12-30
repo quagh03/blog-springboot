@@ -67,7 +67,7 @@ public class CategoryService implements ICategoryService{
         List<PostCategory> postCategoryList = postCategoryRepository.findByCategory(category);
         List<Category> childCategoryList = categoryRepository.findByParentCategory(category);
         if (!postCategoryList.isEmpty() || !childCategoryList.isEmpty()) {
-            throw new IllegalStateException("Cannot delete category with associated products or child category");
+            throw new IllegalStateException("Cannot delete category with associated post or child category");
         }
         categoryRepository.deleteById(id);
         return category;
