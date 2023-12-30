@@ -51,7 +51,7 @@ public class User {
     private String profile;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column()
     private Role role;
 
     @Column(name = "is_active", nullable = false)
@@ -63,5 +63,7 @@ public class User {
     @Column(name = "google_account_id")
     private Integer googleAccountId;
 
+    @Column(name = "verification_code", length = 64)
+    private String verifitaionCode;
 }
 

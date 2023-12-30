@@ -16,6 +16,7 @@ CREATE TABLE `blog`.`users` (
                                 `last_login` DATETIME,
                                 `intro` TINYTEXT,
                                 `profile` TEXT,
+                                `verification_code` VARCHAR(64),
                                 `role` ENUM('ROLE_ADMIN', 'ROLE_AUTHOR', 'ROLE_GUEST') DEFAULT 'ROLE_GUEST',
                                 `is_active` TINYINT(1) NOT NULL DEFAULT 0,
                                 `facebook_account_id` INT DEFAULT 0,
