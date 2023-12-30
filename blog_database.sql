@@ -16,7 +16,7 @@ CREATE TABLE `blog`.`users` (
                                 `last_login` DATETIME,
                                 `intro` TINYTEXT,
                                 `profile` TEXT,
-                                `role` ENUM('ROLE_ADMIN', 'ROLE_AUTHOR', 'ROLE_GUEST') NOT NULL DEFAULT 'ROLE_GUEST',
+                                `role` ENUM('ROLE_ADMIN', 'ROLE_AUTHOR', 'ROLE_GUEST') DEFAULT 'ROLE_GUEST',
                                 `is_active` TINYINT(1) NOT NULL DEFAULT 0,
                                 `facebook_account_id` INT DEFAULT 0,
                                 `google_account_id` INT DEFAULT 0,
@@ -166,6 +166,7 @@ CREATE TABLE `blog`.`tags` (
                                `title` VARCHAR(75) NOT NULL,
                                `meta_title` VARCHAR(100) DEFAULT NULL,
                                `slug` VARCHAR(100) NOT NULL,
+                               `number_of_posts` INT DEFAULT 0,
                                `content` TEXT,
                                PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -207,3 +208,28 @@ BEGIN
     WHERE id = OLD.category_id;
 END //
 DELIMITER ;
+
+-- Trigger for increasing post count per tag
+DELIMITER //
+CREATE TRIGGER increase_post_tag_count
+    BEFORE INSERT ON post_tags
+    FOR EACH ROW
+BEGIN
+    UPDATE tags
+    SET number_of_posts = number_of_posts + 1
+    WHERE id = NEW.tag_id;
+END //
+DELIMITER ;
+
+-- Trigger for decreasing post count per tag
+DELIMITER //
+CREATE TRIGGER decrease_post_tag_count
+    BEFORE DELETE ON post_tags
+    FOR EACH ROW
+BEGIN
+    UPDATE tags
+    SET number_of_posts = number_of_posts - 1
+    WHERE id = OLD.tag_id;
+END //
+DELIMITER ;
+
