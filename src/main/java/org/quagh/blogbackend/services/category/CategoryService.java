@@ -49,7 +49,7 @@ public class CategoryService implements ICategoryService{
     @Transactional
     public Category updateCategory(Long id, CategoryDTO categoryDTO) throws DataNotFoundException {
         Category existingCategory = getCategoryById(id);
-        BeanUtils.copyProperties(categoryDTO, existingCategory, "id");
+        BeanUtils.copyProperties(categoryDTO, existingCategory, "number_of_posts");
         Long parentId = categoryDTO.getParentId();
         if(parentId!=null){
             Category parentCategory = categoryRepository.findById(parentId)
