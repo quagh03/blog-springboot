@@ -50,6 +50,23 @@ CREATE TABLE `blog`.`social_accounts` (
                                           FOREIGN KEY (`user_id`) REFERENCES `blog`.`users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Category Table
+CREATE TABLE `blog`.`categories` (
+                                     `id` BIGINT AUTO_INCREMENT,
+                                     `parent_id` BIGINT NULL DEFAULT NULL,
+                                     `title` VARCHAR(75) NOT NULL,
+                                     `meta_title` VARCHAR(100) NULL DEFAULT NULL,
+                                     `slug` VARCHAR(100) NOT NULL,
+                                     `content` TEXT NULL DEFAULT NULL,
+                                     `number_of_posts` INT DEFAULT 0,
+                                     PRIMARY KEY (`id`),
+                                     INDEX `idx_category_parent` (`parent_id` ASC),
+                                     CONSTRAINT `fk_category_parent`
+                                         FOREIGN KEY (`parent_id`)
+                                             REFERENCES `blog`.`categories` (`id`)
+                                             ON DELETE CASCADE
+                                             ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -- Post Table
 CREATE TABLE `blog`.`posts` (
                                 `id` BIGINT AUTO_INCREMENT,
@@ -62,6 +79,7 @@ CREATE TABLE `blog`.`posts` (
                                 `created_at` DATETIME NOT NULL,
                                 `updated_at` DATETIME NULL DEFAULT NULL,
                                 `published_at` DATETIME NULL DEFAULT NULL,
+                                `category_id` BIGINT NOT NULL,
                                 `thumbnail` TEXT,
                                 `views` INT DEFAULT 0,
                                 `content` TEXT NULL DEFAULT NULL,
@@ -72,8 +90,14 @@ CREATE TABLE `blog`.`posts` (
                                     FOREIGN KEY (`author_id`)
                                         REFERENCES `blog`.`users` (`id`)
                                         ON DELETE CASCADE
+                                        ON UPDATE NO ACTION,
+                                CONSTRAINT `fk_post_category`
+                                    FOREIGN KEY (`category_id`)
+                                        REFERENCES `blog`.`categories` (`id`)
+                                        ON DELETE CASCADE
                                         ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- Image Table
 CREATE TABLE `blog`.`post_images` (
@@ -89,8 +113,6 @@ CREATE TABLE `blog`.`post_images` (
                                               ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Post Comment Table
--- Post Comment Table
 -- Post Comment Table
 CREATE TABLE `blog`.`post_comments` (
                                         `id` BIGINT AUTO_INCREMENT,
@@ -124,43 +146,6 @@ CREATE TABLE `blog`.`post_comments` (
                                                 ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Category Table
-CREATE TABLE `blog`.`categories` (
-                                     `id` BIGINT AUTO_INCREMENT,
-                                     `parent_id` BIGINT NULL DEFAULT NULL,
-                                     `title` VARCHAR(75) NOT NULL,
-                                     `meta_title` VARCHAR(100) NULL DEFAULT NULL,
-                                     `slug` VARCHAR(100) NOT NULL,
-                                     `content` TEXT NULL DEFAULT NULL,
-                                     `number_of_posts` INT DEFAULT 0,
-                                     PRIMARY KEY (`id`),
-                                     INDEX `idx_category_parent` (`parent_id` ASC),
-                                     CONSTRAINT `fk_category_parent`
-                                         FOREIGN KEY (`parent_id`)
-                                             REFERENCES `blog`.`categories` (`id`)
-                                             ON DELETE CASCADE
-                                             ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Post Category Table
-CREATE TABLE `blog`.`post_categories` (
-                                          `post_id` BIGINT NOT NULL,
-                                          `category_id` BIGINT NOT NULL AUTO_INCREMENT,
-                                          PRIMARY KEY (`post_id`, `category_id`),
-                                          INDEX `idx_pc_category` (`category_id` ASC),
-                                          INDEX `idx_pc_post` (`post_id` ASC),
-                                          CONSTRAINT `fk_pc_post`
-                                              FOREIGN KEY (`post_id`)
-                                                  REFERENCES `blog`.`posts` (`id`)
-                                                  ON DELETE CASCADE
-                                                  ON UPDATE NO ACTION,
-                                          CONSTRAINT `fk_pc_category`
-                                              FOREIGN KEY (`category_id`)
-                                                  REFERENCES `blog`.`categories` (`id`)
-                                                  ON DELETE CASCADE
-                                                  ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- Tag Table
 CREATE TABLE `blog`.`tags` (
                                `id` BIGINT AUTO_INCREMENT,
@@ -188,20 +173,21 @@ CREATE TABLE `blog`.`post_tags` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 USE blog;
-
--- Trigger for post count per category
+-- Trigger for increasing post count per category
 DELIMITER //
-CREATE TRIGGER increase_post_count
-    BEFORE INSERT ON post_categories
+CREATE TRIGGER increase_post_category_count
+    AFTER INSERT ON posts
     FOR EACH ROW
 BEGIN
-    SET NEW.category_id = (SELECT id FROM categories WHERE id = NEW.category_id AND number_of_posts = number_of_posts + 1);
+    UPDATE categories
+    SET number_of_posts = number_of_posts + 1
+    WHERE id = NEW.category_id;
 END //
 DELIMITER ;
-
+-- Trigger for decreasing post count per category
 DELIMITER //
-CREATE TRIGGER decrease_post_count
-    BEFORE DELETE ON post_categories
+CREATE TRIGGER decrease_post_category_count
+    BEFORE DELETE ON posts
     FOR EACH ROW
 BEGIN
     UPDATE categories
@@ -209,7 +195,6 @@ BEGIN
     WHERE id = OLD.category_id;
 END //
 DELIMITER ;
-
 -- Trigger for increasing post count per tag
 DELIMITER //
 CREATE TRIGGER increase_post_tag_count
