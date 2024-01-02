@@ -11,4 +11,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByAuthorId(Long authorId);
     boolean existsByTitle(String title);
     Page<Post> findAll(Pageable pageable);
+    List<Post> findByCategoryId(Long categoryId);
+    List<Post> findByTagsId(Long tagId);
 }

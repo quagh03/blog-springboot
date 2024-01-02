@@ -1,7 +1,7 @@
 package org.quagh.blogbackend.services.category;
 
-import org.quagh.blogbackend.entities.PostCategory;
-import org.quagh.blogbackend.repositories.PostCategoryRepository;
+import org.quagh.blogbackend.entities.Post;
+import org.quagh.blogbackend.repositories.PostRepository;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.List;
 public class CategoryService implements ICategoryService{
 
     private final CategoryRepository categoryRepository;
-    private final PostCategoryRepository postCategoryRepository;
+    private final PostRepository postRepository;
 
     @Override
     @Transactional
@@ -64,9 +64,9 @@ public class CategoryService implements ICategoryService{
     public Category deleteCategory(Long id) throws ChangeSetPersister.NotFoundException {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(ChangeSetPersister.NotFoundException::new);
-        List<PostCategory> postCategoryList = postCategoryRepository.findByCategory(category);
+        List<Post> associatedPosts = postRepository.findByCategoryId(id);
         List<Category> childCategoryList = categoryRepository.findByParentCategory(category);
-        if (!postCategoryList.isEmpty() || !childCategoryList.isEmpty()) {
+        if (!associatedPosts.isEmpty() || !childCategoryList.isEmpty()) {
             throw new IllegalStateException("Cannot delete category with associated post or child category");
         }
         categoryRepository.deleteById(id);

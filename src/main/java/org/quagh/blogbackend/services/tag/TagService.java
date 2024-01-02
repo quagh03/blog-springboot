@@ -2,10 +2,10 @@ package org.quagh.blogbackend.services.tag;
 
 import lombok.RequiredArgsConstructor;
 import org.quagh.blogbackend.dtos.TagDTO;
-import org.quagh.blogbackend.entities.PostTag;
+import org.quagh.blogbackend.entities.Post;
 import org.quagh.blogbackend.entities.Tag;
 import org.quagh.blogbackend.exceptions.DataNotFoundException;
-import org.quagh.blogbackend.repositories.PostTagRepository;
+import org.quagh.blogbackend.repositories.PostRepository;
 import org.quagh.blogbackend.repositories.TagRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TagService implements ITagService{
     private final TagRepository tagRepository;
-    private final PostTagRepository postTagRepository;
+    private final PostRepository postRepository;
 
     @Override
     @Transactional
@@ -43,8 +43,8 @@ public class TagService implements ITagService{
     public Tag deleteTag(Long id) throws ChangeSetPersister.NotFoundException{
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(ChangeSetPersister.NotFoundException::new);
-        List<PostTag> postTagList = postTagRepository.findPostTagByTag(tag);
-        if(!postTagList.isEmpty()){
+        List<Post> associatedPosts = postRepository.findByTagsId(id);
+        if(!associatedPosts.isEmpty()){
             throw new IllegalStateException("Cannot delete tag with associated post");
         }
         tagRepository.deleteById(id);

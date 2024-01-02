@@ -1,7 +1,11 @@
 package org.quagh.blogbackend.controllers;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.quagh.blogbackend.dtos.PostDTO;
+import org.quagh.blogbackend.repositories.PostRepository;
+import org.quagh.blogbackend.services.post.PostService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -12,7 +16,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("${api.prefix}/posts")
+@RequiredArgsConstructor
 public class PostController {
+    private final PostService postService;
     @GetMapping("")
     public ResponseEntity<?> getAllPosts(
             @RequestParam(defaultValue = "1") int page,
@@ -21,8 +27,12 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPostById(@PathVariable UUID id){
-        return ResponseEntity.ok("Post with id: " + id);
+    public ResponseEntity<?> getPostById(@PathVariable Long id){
+        try {
+            return ResponseEntity.ok(postService.getPostById(id));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @GetMapping("/slug/{slug}")
@@ -31,8 +41,13 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePost(@PathVariable UUID id){
-        return ResponseEntity.ok("Post with slug = " + id + " deleted successfully");
+    public ResponseEntity<?> deletePost(@PathVariable Long id){
+        try {
+            postService.deletePost(id);
+            return ResponseEntity.ok("Delete post with id: " + id +  " successfully");
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PostMapping("")
@@ -47,7 +62,7 @@ public class PostController {
                         .toList();
                 return ResponseEntity.badRequest().body(errorMessage);
             }
-            return ResponseEntity.ok("Post created successfully " + postDTO);
+            return ResponseEntity.ok(postService.addPost(postDTO));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }

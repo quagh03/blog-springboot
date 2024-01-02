@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @Getter
 @Setter
@@ -32,7 +34,16 @@ public class PostDTO {
     @NotBlank(message = "Content is required")
     private String content;
 
+    @NotBlank(message = "Slug is required")
+    @Size(min = 3, max = 200, message = "Summary must be between 3 and 200 characters")
+    private String slug;
+
     private String thumbnail;
 
-    private String categories;
+    @NotNull(message = "CategoryId is required")
+    @JsonProperty("category_id")
+    private Long categoryId;
+
+    @JsonProperty("tag_ids")
+    private List<Long> tagIds;
 }

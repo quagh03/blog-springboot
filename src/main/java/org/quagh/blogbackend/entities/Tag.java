@@ -1,8 +1,12 @@
 package org.quagh.blogbackend.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "tags")
@@ -31,4 +35,8 @@ public class Tag {
 
     @Column(name = "number_of_posts", nullable = false)
     private Integer numberOfPosts;
+
+    @JsonBackReference
+    @ManyToMany(mappedBy = "tags")
+    private Set<Post> posts = new HashSet<>();
 }

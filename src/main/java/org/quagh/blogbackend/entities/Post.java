@@ -7,9 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "posts")
@@ -60,10 +58,28 @@ public class Post {
     private String content;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "author_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "author_id", referencedColumnName = "id")
     private User author;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PostCategory> categories = new ArrayList<>();
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    private Category category;
+
+    @JsonManagedReference
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "post_tags",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private Set<Tag> tags = new HashSet<>();
+
+    public void addTag(Tag tag) {
+        this.tags.add(tag);
+        tag.getPosts().add(this);
+    }
+
+    public void removeTag(Tag tag) {
+        this.tags.remove(tag);
+        tag.getPosts().remove(this);
+    }
 }
