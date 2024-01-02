@@ -43,7 +43,7 @@ public class UserController {
                 return ResponseEntity.badRequest().body("Password does not match!");
             }
             User addedUser = userService.addUser(userDTO);
-            mailSenderService.sendVerificationEmail(addedUser, getSiteUrl(request));
+//            mailSenderService.sendVerificationEmail(addedUser, getSiteUrl(request));
             return ResponseEntity.ok("Register Successfully" + addedUser);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
