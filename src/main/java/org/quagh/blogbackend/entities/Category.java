@@ -32,7 +32,7 @@ public class Category {
     @Column(name = "number_of_posts", nullable = false)
     private Integer numberOfPosts;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     @JsonManagedReference
     private Category parentCategory;

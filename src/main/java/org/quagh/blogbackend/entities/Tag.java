@@ -38,5 +38,5 @@ public class Tag {
 
     @JsonBackReference
     @ManyToMany(mappedBy = "tags")
-    private Set<Post> posts = new HashSet<>();
+    private Set<Post> posts;
 }

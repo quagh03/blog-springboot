@@ -3,6 +3,7 @@ package org.quagh.blogbackend.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.quagh.blogbackend.dtos.PostDTO;
+import org.quagh.blogbackend.entities.Post;
 import org.quagh.blogbackend.repositories.PostRepository;
 import org.quagh.blogbackend.services.post.PostService;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,26 @@ public class PostController {
         }
     }
 
+    @PostMapping("/publish/{id}")
+    public ResponseEntity<?> publishPost(@PathVariable Long id){
+        try {
+            Post publishedPost = postService.publishPost(id);
+            return ResponseEntity.ok("Published post with id:" + id);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("unpublish/{id}")
+    public ResponseEntity<?> unpublishPost(@PathVariable Long id){
+        try {
+            Post publishedPost = postService.unpublishPost(id);
+            return ResponseEntity.ok("Unpublished post with id:" + id);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     @PostMapping("")
     public ResponseEntity<?> createPost(
             @Valid @RequestBody PostDTO postDTO,
@@ -63,6 +84,25 @@ public class PostController {
                 return ResponseEntity.badRequest().body(errorMessage);
             }
             return ResponseEntity.ok(postService.addPost(postDTO));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updatePost(
+            @Valid @RequestBody PostDTO postDTO,
+            @PathVariable Long id,
+            BindingResult result){
+        try {
+            if(result.hasErrors()){
+                List<String> errorMessage = result.getAllErrors()
+                        .stream()
+                        .map(ObjectError::getDefaultMessage)
+                        .toList();
+                return ResponseEntity.badRequest().body(errorMessage);
+            }
+            return ResponseEntity.ok(postService.updatePost(id,postDTO));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }

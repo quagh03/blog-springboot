@@ -57,12 +57,12 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "author_id", referencedColumnName = "id")
     private User author;
 
     @JsonManagedReference
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
@@ -71,7 +71,7 @@ public class Post {
     @JoinTable(name = "post_tags",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    private Set<Tag> tags = new HashSet<>();
+    private Set<Tag> tags;
 
     public void addTag(Tag tag) {
         this.tags.add(tag);
