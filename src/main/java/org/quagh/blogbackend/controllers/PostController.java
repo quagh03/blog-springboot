@@ -4,8 +4,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.quagh.blogbackend.dtos.PostDTO;
 import org.quagh.blogbackend.entities.Post;
-import org.quagh.blogbackend.repositories.PostRepository;
+import org.quagh.blogbackend.responses.PostListResponse;
+import org.quagh.blogbackend.responses.PostResponse;
 import org.quagh.blogbackend.services.post.PostService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -13,7 +15,6 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("${api.prefix}/posts")
@@ -22,24 +23,69 @@ public class PostController {
     private final PostService postService;
     @GetMapping("")
     public ResponseEntity<?> getAllPosts(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0", name = "category_id") Long categoryId,
+            @RequestParam(defaultValue = "0", name = "author_id") Long authorId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int limit){
-        return ResponseEntity.ok(String.format("getAllPost, page=%d, limit=%d", page,limit));
+            @RequestParam(defaultValue = "3") int limit){
+        PostListResponse postListResponse = postService.getAllPosts(keyword, categoryId, authorId);
+
+        //Apply pagination
+        int totalItems = postListResponse.getPosts().size();
+        int totalPages = (int) Math.ceil((double) totalItems / limit);
+
+        //Calculate start and indexes based on page and limit
+        int startIndex = (page - 1) * limit;
+        int endIndex = Math.min(startIndex + limit, totalItems);
+
+        // Get the sublist for the current page
+        List<PostResponse> paginatedPosts = postListResponse.getPosts().subList(startIndex, endIndex);
+
+        // Create a new response with the paginated posts
+        PostListResponse paginatedResponse = PostListResponse.builder()
+                .posts(paginatedPosts)
+                .build();
+
+        // Create pagination headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Pagination-Total-Items", String.valueOf(totalItems));
+        headers.add("Pagination-Total-Pages", String.valueOf(totalPages));
+        headers.add("Pagination-Page", String.valueOf(page));
+        headers.add("Pagination-Limit", String.valueOf(limit));
+
+        // Add links for next and previous pages
+        if (page < totalPages) {
+            String nextPageUrl = "/posts?page=" + (page + 1) + "&limit=" + limit + "&category_id=" + categoryId + "&author_id=" + authorId;
+            headers.add("Pagination-Next-Page", nextPageUrl);
+        }
+        if (page > 1) {
+            String prevPageUrl = "/posts?page=" + (page - 1) + "&limit=" + limit + "&category_id=" + categoryId + "&author_id=" + authorId;
+            headers.add("Pagination-Prev-Page", prevPageUrl);
+        }
+
+        return new ResponseEntity<>(paginatedResponse, headers, HttpStatus.OK);
+
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getPostById(@PathVariable Long id){
         try {
-            return ResponseEntity.ok(postService.getPostById(id));
+            PostResponse postResponse = PostResponse.fromPost(postService.getPostById(id));
+            return ResponseEntity.ok(postResponse);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    @GetMapping("/slug/{slug}")
-    public ResponseEntity<?> getPostBySlug(@PathVariable String slug){
-        return ResponseEntity.ok("Post with id: " + slug);
-    }
+//    @GetMapping("/slug/{slug}")
+//    public ResponseEntity<?> getPostBySlug(@PathVariable String slug){
+//        try {
+//            PostResponse postResponse = PostResponse.fromPost();
+//            return ResponseEntity.ok(postResponse);
+//        }catch (Exception e){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//        }
+//    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePost(@PathVariable Long id){

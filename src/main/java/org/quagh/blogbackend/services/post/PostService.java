@@ -12,12 +12,15 @@ import org.quagh.blogbackend.repositories.CategoryRepository;
 import org.quagh.blogbackend.repositories.PostRepository;
 import org.quagh.blogbackend.repositories.TagRepository;
 import org.quagh.blogbackend.repositories.UserRepository;
+import org.quagh.blogbackend.responses.PostListResponse;
+import org.quagh.blogbackend.responses.PostResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +34,13 @@ public class PostService implements IPostService{
     private final UserRepository userRepository;
 
     @Override
-    public Page<Post> getAllPosts(PageRequest pageRequest){
-        return null;
+    public PostListResponse getAllPosts(String keyword, Long categoryId, Long authorId){
+        List<Post> postList = postRepository.searchPosts(categoryId, keyword, authorId);
+        List<PostResponse> postResponses = new ArrayList<>();
+        for(Post post : postList){
+            postResponses.add(PostResponse.fromPost(post));
+        }
+        return new PostListResponse(postResponses);
     }
 
     @Override

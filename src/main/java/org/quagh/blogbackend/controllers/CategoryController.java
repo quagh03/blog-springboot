@@ -6,6 +6,7 @@ import org.quagh.blogbackend.dtos.CategoryDTO;
 import org.quagh.blogbackend.entities.Category;
 import org.quagh.blogbackend.responses.CategoryResponse;
 import org.quagh.blogbackend.services.category.CategoryService;
+import org.quagh.blogbackend.services.category.ICategoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
