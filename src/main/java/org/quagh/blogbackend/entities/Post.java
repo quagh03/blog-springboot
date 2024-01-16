@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.*;
@@ -73,6 +72,10 @@ public class Post {
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<PostComment> comments;
+
     public void addTag(Tag tag) {
         this.tags.add(tag);
         tag.getPosts().add(this);
@@ -81,5 +84,17 @@ public class Post {
     public void removeTag(Tag tag) {
         this.tags.remove(tag);
         tag.getPosts().remove(this);
+    }
+
+    // Method to add a comment to the post
+    public void addComment(PostComment comment) {
+        comments.add(comment);
+        comment.setPost(this);
+    }
+
+    // Method to remove a comment from the post
+    public void removeComment(PostComment comment) {
+        comments.remove(comment);
+        comment.setPost(null);
     }
 }

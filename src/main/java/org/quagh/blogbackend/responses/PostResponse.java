@@ -1,12 +1,10 @@
 package org.quagh.blogbackend.responses;
 
 import lombok.*;
-import org.quagh.blogbackend.entities.Category;
-import org.quagh.blogbackend.entities.Post;
-import org.quagh.blogbackend.entities.Tag;
-import org.quagh.blogbackend.entities.User;
+import org.quagh.blogbackend.entities.*;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -27,6 +25,7 @@ public class PostResponse {
     private String content;
     private User author;
     private Category category;
+    private List<PostComment> comments;
     private Set<Tag> tags;
     public static PostResponse fromPost(Post post) {
         return PostResponse.builder()
@@ -42,6 +41,7 @@ public class PostResponse {
                 .content(post.getContent())
                 .author(post.getAuthor())
                 .category(post.getCategory())
+                .comments(post.getComments())
                 .tags(post.getTags())
                 .build();
     }
