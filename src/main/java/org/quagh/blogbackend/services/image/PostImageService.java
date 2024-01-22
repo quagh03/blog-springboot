@@ -1,9 +1,13 @@
 package org.quagh.blogbackend.services.image;
 
 import lombok.RequiredArgsConstructor;
+import org.quagh.blogbackend.entities.Post;
 import org.quagh.blogbackend.entities.PostImage;
+import org.quagh.blogbackend.exceptions.DataNotFoundException;
 import org.quagh.blogbackend.repositories.PostImageRepository;
+import org.quagh.blogbackend.repositories.PostRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -20,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PostImageService implements IImageService<PostImage>{
     private final PostImageRepository postImageRepository;
+    private final PostRepository postRepository;
 
     private final Path root = Paths.get("uploads");
 
@@ -29,7 +35,29 @@ public class PostImageService implements IImageService<PostImage>{
     }
 
     @Override
-    public String storeFile(MultipartFile file) throws IOException {
+    @Transactional
+    public List<PostImage> saveImageToDb(Long id, List<String> filenames) throws DataNotFoundException {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Post not found with id: " + id));
+        List<PostImage> savedPostImages = new ArrayList<>();
+        for (String filename : filenames) {
+            PostImage postImage = new PostImage();
+            postImage.setPost(post);
+            postImage.setUrl(filename);
+            savedPostImages.add(postImageRepository.save(postImage));
+        }
+        return savedPostImages;
+    }
+
+    @Override
+    @Transactional
+    public void deleteImage(Long id){
+        postImageRepository.deleteAllByPostId(id);
+    }
+
+
+    @Override
+    public String storeFile(MultipartFile file) throws IOException, DataNotFoundException{
         String filename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         //Add UUID before filename. Make sure filename is unique
         String uniqueFilename = UUID.randomUUID().toString() + "_" + filename;

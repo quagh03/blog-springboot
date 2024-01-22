@@ -23,6 +23,6 @@ public class PostImage {
     private String url;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "post_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "post_id", referencedColumnName = "id")
     private Post post;
 }

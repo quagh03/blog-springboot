@@ -1,6 +1,7 @@
 package org.quagh.blogbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.quagh.blogbackend.dtos.PostImageDTO;
 import org.quagh.blogbackend.services.image.IImageService;
 import org.quagh.blogbackend.services.image.PostImageService;
 import org.quagh.blogbackend.services.image.UserImageService;
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -33,6 +35,25 @@ public class ImageController {
     @PostMapping("/post")
     public ResponseEntity<?> uploadPostImage(@RequestParam("image")MultipartFile file){
         return uploadImage(file, postImageService);
+    }
+
+    @PostMapping("/post/{id}/save")
+    public ResponseEntity<?> savePostImage(@PathVariable Long id, @RequestBody PostImageDTO postImageDTO){
+        try {
+            return ResponseEntity.ok(postImageService.saveImageToDb(id, postImageDTO.getImageUrl()));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/post/{id}/delete")
+    public ResponseEntity<?> deletePostImage(@PathVariable Long id){
+        try {
+            postImageService.deleteImage(id);
+            return ResponseEntity.ok("Deleted");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     //Image Upload Method
