@@ -6,6 +6,7 @@ import org.quagh.blogbackend.dtos.PostDTO;
 import org.quagh.blogbackend.entities.Post;
 import org.quagh.blogbackend.responses.PostListResponse;
 import org.quagh.blogbackend.responses.PostResponse;
+import org.quagh.blogbackend.services.image.PostImageService;
 import org.quagh.blogbackend.services.post.PostService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final PostImageService postImageService;
     @GetMapping("")
     public ResponseEntity<?> getAllPosts(
             @RequestParam(defaultValue = "") String keyword,

@@ -2,6 +2,7 @@ package org.quagh.blogbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.quagh.blogbackend.dtos.PostImageDTO;
+import org.quagh.blogbackend.entities.PostImage;
 import org.quagh.blogbackend.services.image.IImageService;
 import org.quagh.blogbackend.services.image.PostImageService;
 import org.quagh.blogbackend.services.image.UserImageService;
@@ -37,7 +38,7 @@ public class ImageController {
         return uploadImage(file, postImageService);
     }
 
-    @PostMapping("/post/{id}/save")
+    @PostMapping("/post/{id}")
     public ResponseEntity<?> savePostImage(@PathVariable Long id, @RequestBody PostImageDTO postImageDTO){
         try {
             return ResponseEntity.ok(postImageService.saveImageToDb(id, postImageDTO.getImageUrl()));
@@ -46,7 +47,7 @@ public class ImageController {
         }
     }
 
-    @DeleteMapping("/post/{id}/delete")
+    @DeleteMapping("/post/{id}")
     public ResponseEntity<?> deletePostImage(@PathVariable Long id){
         try {
             postImageService.deleteImage(id);
