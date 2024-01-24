@@ -10,9 +10,13 @@ import java.util.List;
 public interface IImageService<T> {
     List<T> getAllImage();
 
+    T getImageById(Long id) throws DataNotFoundException;
+
     List<T> saveImageToDb(Long id, List<String> filename) throws DataNotFoundException;
 
     void deleteImage(Long id) throws DataNotFoundException;
 
     String storeFile(MultipartFile file) throws IOException, DataNotFoundException;
+
+    void deleteFile(String filename) throws IOException;
 }

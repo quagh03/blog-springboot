@@ -35,6 +35,12 @@ public class PostImageService implements IImageService<PostImage>{
     }
 
     @Override
+    public PostImage getImageById(Long id) throws DataNotFoundException {
+        return postImageRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Image not found with Id"));
+    }
+
+    @Override
     @Transactional
     public List<PostImage> saveImageToDb(Long id, List<String> filenames) throws DataNotFoundException {
         Post post = postRepository.findById(id)
@@ -51,9 +57,23 @@ public class PostImageService implements IImageService<PostImage>{
 
     @Override
     @Transactional
-    public void deleteImage(Long id){
-        postImageRepository.deleteAllByPostId(id);
+    public void deleteImage(Long id) throws DataNotFoundException {
+        PostImage postImage = postImageRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("No image found with id"));
+        String filename = postImage.getUrl();
+        deleteFile(filename);
+        postImageRepository.deleteById(id);
     }
+
+//    @Override
+//    @Transactional
+//    public void deleteImage(Long id){
+//        List<PostImage> postImageUrlList = postImageRepository.findAllByPostId(id);
+//        postImageUrlList.forEach(filename -> {
+//            deleteFile(filename.getUrl());
+//        });
+//        postImageRepository.deleteAllByPostId(id);
+//    }
 
 
     @Override
@@ -72,5 +92,17 @@ public class PostImageService implements IImageService<PostImage>{
         //Copy file to folder
         Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
         return uniqueFilename;
+    }
+
+    @Override
+    public void deleteFile(String filename) {
+        Path filePath = Paths.get("uploads/posts", filename);
+        try {
+            // Delete the file
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
     }
 }

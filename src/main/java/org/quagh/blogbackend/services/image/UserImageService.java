@@ -1,6 +1,7 @@
 package org.quagh.blogbackend.services.image;
 
 import lombok.RequiredArgsConstructor;
+import org.quagh.blogbackend.exceptions.DataNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,9 +19,25 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserImageService implements IImageService<String>{
 
+
     @Override
     public List<String> getAllImage() {
         return null;
+    }
+
+    @Override
+    public String getImageById(Long id) throws DataNotFoundException {
+        return null;
+    }
+
+    @Override
+    public List<String> saveImageToDb(Long id, List<String> filename) throws DataNotFoundException {
+        return null;
+    }
+
+    @Override
+    public void deleteImage(Long id) {
+
     }
 
 
@@ -40,6 +57,11 @@ public class UserImageService implements IImageService<String>{
         //Copy file to folder
         Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
         return uniqueFilename;
+    }
+
+    @Override
+    public void deleteFile(String filename) throws IOException {
+
     }
 
 
