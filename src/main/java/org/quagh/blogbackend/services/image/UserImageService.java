@@ -1,7 +1,9 @@
 package org.quagh.blogbackend.services.image;
 
 import lombok.RequiredArgsConstructor;
+import org.quagh.blogbackend.entities.User;
 import org.quagh.blogbackend.exceptions.DataNotFoundException;
+import org.quagh.blogbackend.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +20,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserImageService implements IImageService<String>{
-
+    private final UserRepository userRepository;
 
     @Override
     public List<String> getAllImage() {
@@ -36,8 +38,16 @@ public class UserImageService implements IImageService<String>{
     }
 
     @Override
-    public void deleteImage(Long id) {
-
+    public void deleteImage(Long id) throws DataNotFoundException, IOException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("User not found with id: " + id));
+        String filename = user.getProfile();
+        if(!filename.isEmpty()){
+            deleteFile(filename);
+            filename = "";
+        }
+        user.setProfile(filename);
+        userRepository.save(user);
     }
 
 
@@ -61,7 +71,14 @@ public class UserImageService implements IImageService<String>{
 
     @Override
     public void deleteFile(String filename) throws IOException {
-
+        Path filePath = Paths.get("uploads/users", filename);
+        try {
+            // Delete the file
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
     }
 
 

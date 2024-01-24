@@ -14,7 +14,7 @@ public interface IImageService<T> {
 
     List<T> saveImageToDb(Long id, List<String> filename) throws DataNotFoundException;
 
-    void deleteImage(Long id) throws DataNotFoundException;
+    void deleteImage(Long id) throws DataNotFoundException, IOException;
 
     String storeFile(MultipartFile file) throws IOException, DataNotFoundException;
 
