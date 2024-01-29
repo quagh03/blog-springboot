@@ -44,7 +44,7 @@ public class UserController {
             }
             User addedUser = userService.addUser(userDTO);
 //            mailSenderService.sendVerificationEmail(addedUser, getSiteUrl(request));
-            return ResponseEntity.ok("Register Successfully" + addedUser);
+            return ResponseEntity.ok("Register Successfully " + addedUser);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -61,7 +61,12 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody UserLoginDTO userLoginDTO){
-        return ResponseEntity.ok("some body");
+        try {
+            String token = userService.login(userLoginDTO.getUsername(), userLoginDTO.getPasswordHash());
+            return ResponseEntity.ok(token);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     private String getSiteUrl(HttpServletRequest request){

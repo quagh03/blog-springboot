@@ -36,13 +36,14 @@ public class UserService implements IUserService{
             throw new DataIntegrityViolationException("User with given email, phone number, or username already exists!");
         }
 
+        BeanUtils.copyProperties(userDTO, newUser);
+
         if(userDTO.getFacebookAccountId() == 0 && userDTO.getGoogleAccountId() == 0){
             String password = userDTO.getPasswordHash();
             String encodedPassword = passwordEncoder.encode(password);
             newUser.setPasswordHash(encodedPassword);
         }
 
-        BeanUtils.copyProperties(userDTO, newUser);
         String randomCode = String.valueOf(UUID.randomUUID());
         newUser.setVerifitaionCode(randomCode);
         newUser.setActive(false);
@@ -76,7 +77,7 @@ public class UserService implements IUserService{
         }
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                username, password
+                username, password, loginUser.getAuthorities()
         );
 
         //Authenticate with Spring Security
